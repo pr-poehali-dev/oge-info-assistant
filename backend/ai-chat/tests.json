@@ -1,0 +1,17 @@
+{
+  "tests": [
+    {
+      "name": "Вопрос по математике",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "messages": [
+          { "role": "user", "text": "Что такое дискриминант?" }
+        ]
+      },
+      "expectedStatus": 200,
+      "expectedBody": { "reply": "string" },
+      "bodyMatcher": "partial"
+    }
+  ]
+}

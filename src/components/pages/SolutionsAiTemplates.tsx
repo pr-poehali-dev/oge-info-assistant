@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from "react";
 import Icon from "@/components/ui/icon";
 import { solutions, templates, initMessages } from "@/data/content";
 
+const AI_CHAT_URL = "https://functions.poehali.dev/ea22cfb5-abac-46f4-80d7-35a3c0644b15";
+
 export function SolutionsPage() {
   return (
     <div className="max-w-5xl mx-auto px-6 py-12">
@@ -57,18 +59,26 @@ export function AiPage() {
   const [isTyping, setIsTyping] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
-  const send = () => {
-    if (!input.trim()) return;
-    setMessages(prev => [...prev, { role: "user", text: input }]);
+  const send = async () => {
+    if (!input.trim() || isTyping) return;
+    const userText = input.trim();
+    const newMessages = [...messages, { role: "user", text: userText }];
+    setMessages(newMessages);
     setInput("");
     setIsTyping(true);
-    setTimeout(() => {
-      setMessages(prev => [...prev, {
-        role: "ai",
-        text: "Отличный вопрос! Давай разберём это пошагово. Для более точного ответа уточни, какую тему мы изучаем — и я подготовлю подробное объяснение с примерами 🎯",
-      }]);
+    try {
+      const res = await fetch(AI_CHAT_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messages: newMessages }),
+      });
+      const data = await res.json();
+      setMessages(prev => [...prev, { role: "ai", text: data.reply }]);
+    } catch {
+      setMessages(prev => [...prev, { role: "ai", text: "Не удалось получить ответ. Попробуй ещё раз 🙏" }]);
+    } finally {
       setIsTyping(false);
-    }, 1500);
+    }
   };
 
   useEffect(() => {
