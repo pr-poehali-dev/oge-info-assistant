@@ -1,10 +1,12 @@
 import { useState, useEffect, useRef } from "react";
 import Icon from "@/components/ui/icon";
-import { solutions, templates, initMessages } from "@/data/content";
+import { solutions, templates, initMessages, Section } from "@/data/content";
 
 const AI_CHAT_URL = "https://functions.poehali.dev/ea22cfb5-abac-46f4-80d7-35a3c0644b15";
 
-export function SolutionsPage() {
+export function SolutionsPage({ onNavigate }: { onNavigate: (s: Section) => void }) {
+  const [expanded, setExpanded] = useState<number | null>(null);
+
   return (
     <div className="max-w-5xl mx-auto px-6 py-12">
       <div className="mb-10">
@@ -15,29 +17,56 @@ export function SolutionsPage() {
       </div>
       <div className="flex flex-col gap-5">
         {solutions.map((sol, i) => (
-          <div key={sol.id} className="glass rounded-2xl p-6 glass-hover cursor-pointer animate-fade-in" style={{ animationDelay: `${i * 0.1}s` }}>
-            <div className="flex items-start gap-4">
-              <div className="w-12 h-12 rounded-xl bg-[#9b5de5]/20 border border-[#9b5de5]/30 flex items-center justify-center flex-shrink-0">
-                <Icon name="Sparkles" size={20} className="text-[#9b5de5]" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-start justify-between gap-4 mb-2">
-                  <h3 className="font-heading font-bold">{sol.task}</h3>
-                  <div className="flex items-center gap-1 text-[#fee440] flex-shrink-0">
-                    <Icon name="Star" size={14} className="fill-[#fee440]" />
-                    <span className="text-sm font-bold">{sol.rating}</span>
+          <div key={sol.id} className="glass rounded-2xl overflow-hidden animate-fade-in" style={{ animationDelay: `${i * 0.1}s` }}>
+            <div
+              className="p-6 cursor-pointer glass-hover"
+              onClick={() => setExpanded(expanded === sol.id ? null : sol.id)}
+            >
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 rounded-xl bg-[#9b5de5]/20 border border-[#9b5de5]/30 flex items-center justify-center flex-shrink-0">
+                  <Icon name="Sparkles" size={20} className="text-[#9b5de5]" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-start justify-between gap-4 mb-2">
+                    <h3 className="font-heading font-bold">{sol.task}</h3>
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      <div className="flex items-center gap-1 text-[#fee440]">
+                        <Icon name="Star" size={14} className="fill-[#fee440]" />
+                        <span className="text-sm font-bold">{sol.rating}</span>
+                      </div>
+                      <Icon name={expanded === sol.id ? "ChevronUp" : "ChevronDown"} size={16} className="text-muted-foreground" />
+                    </div>
                   </div>
-                </div>
-                <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4 flex-wrap">
-                  <span className="flex items-center gap-1"><Icon name="ListOrdered" size={13} />{sol.steps} шага</span>
-                  <span className="flex items-center gap-1"><Icon name="Layers" size={13} />{sol.method}</span>
-                  <span className="flex items-center gap-1"><Icon name="Eye" size={13} />{sol.views.toLocaleString()}</span>
-                </div>
-                <div className="w-full bg-white/5 rounded-full h-1.5">
-                  <div className="h-full rounded-full bg-gradient-to-r from-[#9b5de5] to-[#4cc9f0]" style={{ width: `${(sol.steps / 5) * 100}%` }} />
+                  <div className="flex items-center gap-4 text-sm text-muted-foreground flex-wrap">
+                    <span className="flex items-center gap-1"><Icon name="ListOrdered" size={13} />{sol.steps} шага</span>
+                    <span className="flex items-center gap-1"><Icon name="Layers" size={13} />{sol.method}</span>
+                    <span className="flex items-center gap-1"><Icon name="Eye" size={13} />{sol.views.toLocaleString()}</span>
+                  </div>
                 </div>
               </div>
             </div>
+
+            {expanded === sol.id && (
+              <div className="border-t border-white/5 px-6 pb-6 pt-4 animate-fade-in">
+                <div className="space-y-3">
+                  {sol.stepDetails.map((step, j) => (
+                    <div key={j} className="flex items-start gap-3">
+                      <div className="w-6 h-6 rounded-full bg-gradient-to-br from-[#9b5de5] to-[#4cc9f0] flex items-center justify-center flex-shrink-0 text-white text-xs font-bold mt-0.5">
+                        {j + 1}
+                      </div>
+                      <p className="text-sm text-muted-foreground leading-relaxed">{step}</p>
+                    </div>
+                  ))}
+                </div>
+                <button
+                  onClick={() => onNavigate("ai")}
+                  className="mt-4 flex items-center gap-2 text-sm text-primary hover:text-primary/80 transition-colors font-medium"
+                >
+                  <Icon name="Bot" size={15} />
+                  Задать уточняющий вопрос ИИ
+                </button>
+              </div>
+            )}
           </div>
         ))}
       </div>
@@ -45,7 +74,10 @@ export function SolutionsPage() {
         <Icon name="Search" size={32} className="text-muted-foreground mx-auto mb-3" />
         <h3 className="font-heading font-bold mb-1">Не нашёл нужное решение?</h3>
         <p className="text-muted-foreground text-sm mb-4">Задай вопрос ИИ-ассистенту — он разберёт твою задачу пошагово</p>
-        <button className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#9b5de5] to-[#4cc9f0] text-white font-medium text-sm hover:opacity-90 transition-opacity">
+        <button
+          onClick={() => onNavigate("ai")}
+          className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#9b5de5] to-[#4cc9f0] text-white font-medium text-sm hover:opacity-90 transition-opacity"
+        >
           Открыть ИИ-ассистент
         </button>
       </div>
@@ -132,7 +164,7 @@ export function AiPage() {
         />
         <button
           onClick={send}
-          disabled={!input.trim()}
+          disabled={!input.trim() || isTyping}
           className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#9b5de5] to-[#4cc9f0] flex items-center justify-center hover:opacity-90 transition-opacity disabled:opacity-30 flex-shrink-0"
         >
           <Icon name="Send" size={18} className="text-white" />
@@ -142,8 +174,13 @@ export function AiPage() {
   );
 }
 
-export function TemplatesPage() {
+export function TemplatesPage({ onNavigate }: { onNavigate: (s: Section) => void }) {
   const [expanded, setExpanded] = useState<number | null>(null);
+
+  const copyTemplate = (tpl: typeof templates[0]) => {
+    const text = tpl.steps.map((s, i) => `${i + 1}. ${s}`).join("\n");
+    navigator.clipboard.writeText(`${tpl.title}\n\n${text}`);
+  };
 
   return (
     <div className="max-w-4xl mx-auto px-6 py-12">
@@ -181,7 +218,10 @@ export function TemplatesPage() {
                         <p className="text-sm text-muted-foreground leading-relaxed">{step}</p>
                       </div>
                     ))}
-                    <button className="mt-2 w-full py-2.5 rounded-xl border border-white/10 text-sm font-medium hover:bg-white/5 transition-colors flex items-center justify-center gap-2 text-foreground">
+                    <button
+                      onClick={e => { e.stopPropagation(); copyTemplate(tpl); }}
+                      className="mt-2 w-full py-2.5 rounded-xl border border-white/10 text-sm font-medium hover:bg-white/5 transition-colors flex items-center justify-center gap-2 text-foreground"
+                    >
                       <Icon name="Copy" size={14} />
                       Скопировать шаблон
                     </button>
@@ -201,7 +241,10 @@ export function TemplatesPage() {
             <h3 className="font-heading font-bold mb-1">Нужен персональный шаблон?</h3>
             <p className="text-sm text-muted-foreground">ИИ-ассистент создаст шаблон специально под твою задачу</p>
           </div>
-          <button className="px-4 py-2 rounded-xl bg-gradient-to-r from-[#9b5de5] to-[#4cc9f0] text-white text-sm font-medium hover:opacity-90 transition-opacity whitespace-nowrap">
+          <button
+            onClick={() => onNavigate("ai")}
+            className="px-4 py-2 rounded-xl bg-gradient-to-r from-[#9b5de5] to-[#4cc9f0] text-white text-sm font-medium hover:opacity-90 transition-opacity whitespace-nowrap"
+          >
             Создать
           </button>
         </div>

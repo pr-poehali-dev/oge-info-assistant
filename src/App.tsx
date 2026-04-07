@@ -10,11 +10,11 @@ export default function App() {
   const renderPage = () => {
     switch (active) {
       case "home": return <HomePage onNavigate={setActive} />;
-      case "theory": return <TheoryPage />;
-      case "tasks": return <TasksPage />;
-      case "solutions": return <SolutionsPage />;
+      case "theory": return <TheoryPage onNavigate={setActive} />;
+      case "tasks": return <TasksPage onNavigate={setActive} />;
+      case "solutions": return <SolutionsPage onNavigate={setActive} />;
       case "ai": return <AiPage />;
-      case "templates": return <TemplatesPage />;
+      case "templates": return <TemplatesPage onNavigate={setActive} />;
     }
   };
 
